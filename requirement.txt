@@ -1,0 +1,5 @@
+Django>=4.2,<5.3
+geopy>=2.4.1
+google-generativeai>=0.3.2
+stripe>=8.0.0
+Pillow>=10.0.0

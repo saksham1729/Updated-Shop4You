@@ -1,0 +1,46 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Laptop{% endblock title %}
+{% block main-content %}
+<div class="container my-5">
+  <div class="row">
+    
+    <!-- Sidebar Filter (responsive with collapse for mobile) -->
+    <div class="col-12 col-md-3 mb-4">
+      <button class="btn btn-outline-primary w-100 d-md-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        Filter by Brand & Price
+      </button>
+      <div class="list-group collapse d-md-block" id="filterCollapse">
+        <a href="{% url 'laptop' %}" class="list-group-item list-group-item-action {% if request.path == '/laptop/' %}active{% endif %}">All Laptop</a>
+        <a href="{% url 'laptopdata' 'Acer' %}" class="list-group-item list-group-item-action">Acer</a>
+        <a href="{% url 'laptopdata' 'ASUS' %}" class="list-group-item list-group-item-action">Asus</a>
+        <a href="{% url 'laptopdata' 'Lenovo' %}" class="list-group-item list-group-item-action">Lenovo</a>
+        <a href="{% url 'laptopdata' 'below' %}" class="list-group-item list-group-item-action">Below 50000</a>
+        <a href="{% url 'laptopdata' 'above' %}" class="list-group-item list-group-item-action">Above 50000</a>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="col-12 col-md-9">
+      <div class="row">
+        {% for product in laptops %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+          <a href="{% url 'product-detail' product.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100 shadow-sm">
+              <img src="{{ product.product_image.url }}" alt="{{ product.title }}" class="card-img-top img-fluid p-2">
+              <div class="card-body text-center p-2">
+                <p class="fw-bold mb-1 truncate-mobile">{{ product.title }}</p>
+                <p class="fw-bold mb-0">Rs. {{ product.discounted_price }}
+                  <small class="text-muted text-decoration-line-through">{{ product.selling_price }}</small>
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock main-content %}

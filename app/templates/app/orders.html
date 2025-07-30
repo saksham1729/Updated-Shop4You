@@ -1,6 +1,7 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% block title %}Orders{% endblock title %}
+{% load custom_tags %}
 
 {% block main-content %}
 <div class="container my-5">
@@ -22,25 +23,105 @@
       <div class="card mb-3 p-3 shadow-sm bg-body text-body border-0">
         <div class="row align-items-center">
           <div class="col-md-2 text-center">
-            <img src="{{ op.product.product_image.url }}" alt="Product Image" class="img-fluid" style="max-height: 100px;">
-          </div>
+  {% if op.product.product_image %}
+    <!-- 📁 Local Image -->
+    <img src="{{ op.product.product_image.url }}" alt="{{ op.product.title }} (uploaded)" class="fixed-product-img mb-2">
+  {% endif %}
+
+  {% if op.product.img_link %}
+    <!-- 🌐 External Image -->
+    <img src="{{ op.product.img_link }}" alt="{{ op.product.title }} (linked)" class="fixed-product-img mb-2">
+  {% endif %}
+
+  {% if not op.product.product_image and not op.product.img_link %}
+    <!-- ❌ Fallback -->
+    <img src="{% static 'app/images/default.png' %}" alt="Default Image" class="fixed-product-img mb-2">
+  {% endif %}
+</div>
+
+
           <div class="col-md-6">
             <p class="mb-1"><strong>Product:</strong> {{ op.product.title }}</p>
             <p class="mb-1"><strong>Quantity:</strong> {{ op.quantity }}</p>
             <p class="mb-1"><strong>Price:</strong> ₹{{ op.total_cost }}</p>
-            <a href="{% url 'track-order' op.id %}" class="btn btn-outline-primary">Track Order</a>
-          </div>
-          <div class="col-md-4">
-            <p class="fw-bold">Order Status: {{ op.status }}</p>
+            
 
-            {% if op.status == 'Accepted' %}
-              <div class="progress"><div class="progress-bar" role="progressbar" style="width: 20%;"></div></div>
-            {% elif op.status == 'Packed' %}
-              <div class="progress"><div class="progress-bar bg-info" role="progressbar" style="width: 40%;"></div></div>
-            {% elif op.status == 'On The Way' %}
-              <div class="progress"><div class="progress-bar bg-warning" role="progressbar" style="width: 70%;"></div></div>
-            {% elif op.status == 'Delivered' %}
-              <div class="progress"><div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div></div>
+
+              {% if op.status != 'Delivered' %}
+                  <p><strong>Delivery Info:</strong> {{ order.delivery_info }}</p>
+                  <a href="{% url 'track-order' op.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-map-marked-alt"></i>
+                  <span>Track Order</span>  
+                  </a>
+              {% endif %}
+
+            {% if op.status == 'Delivered' %}
+              {% if op.product.id in user_reviews %}
+                {% with review=user_reviews|dict_get:op.product.id %}
+                  <hr>
+                  <div class="alert alert-secondary">
+                    <strong>⭐ Your Review:</strong><br>
+                    Rating: ⭐ {{ review.rating }} / 5<br>
+                    Review: {{ review.review|default:"(No comment)" }}
+                  </div>
+                {% endwith %}
+              {% else %}
+                <hr>
+                <form method="POST" action="{% url 'submit_rating' op.product.id %}">
+                  {% csrf_token %}
+                  <label>⭐ Rate this product:</label>
+                  <div class="star-rating" data-product-id="{{ op.product.id }}">
+                    {% for i in "54321" %}
+                      <input type="radio" name="rating" id="star-{{ op.id }}-{{ i }}" value="{{ i }}">
+                      <label for="star-{{ op.id }}-{{ i }}">★</label>
+                    {% endfor %}
+                  </div>
+                  <textarea name="review" class="form-control mb-2" placeholder="Write your review..." rows="2"></textarea>
+                  <button type="submit" class="btn btn-success">Submit Rating</button>
+                </form>
+              {% endif %}
+            {% endif %}
+
+            <script>
+              document.querySelectorAll('.star-rating input').forEach((input) => {
+                input.addEventListener('change', function () {
+                  console.log("Rated:", this.value);
+                });
+              });
+            </script>
+          </div>
+
+          <div class="col-md-4">
+            <p class="fw-bold mb-3">Order Status: {{ op.status }}</p>
+
+            <div class="tracking-steps d-flex justify-content-between text-center my-3">
+              {% for step_info in steps_with_labels %}
+              {% with step=step_info.0 label=step_info.1 %}
+
+                <div class="step">
+                  <div class="circle {% if op.status == step or step in op.status_sequence %}bg-primary text-white{% else %}bg-light border{% endif %}">
+                    {% if step == 'Pending' %}<i class="fas fa-clock"></i>
+                    {% elif step == 'Accepted' %}<i class="fas fa-check"></i>
+                    {% elif step == 'Packed' %}<i class="fas fa-box-open"></i>
+                    {% elif step == 'On Way' %}<i class="fas fa-route"></i>
+                    {% elif step == 'Out for Delivery' %}<i class="fas fa-truck"></i>
+                    {% elif step == 'Delivered' %}<i class="fas fa-home"></i>
+                    {% elif step == 'Cancelled' %}<i class="fas fa-minus-circle"></i>
+                    {% endif %}
+                  </div>
+                  <div class="label small">{{ label }}</div>
+                </div>
+                {% endwith %}
+              {% endfor %}
+            </div>
+
+            {% if op.status != 'Delivered' and op.eta %}
+              <p class="text-muted"><i class="fas fa-rocket"></i>Estimated delivery: {{ op.eta|date:"M d, Y H:i" }}</p>
+              {% if op.status == 'On The Way' %}
+                <p class="text-success">Your order is out for delivery!</p>
+              {% endif %}
+            {% elif op.status == 'Delivered' and op.delivery_date %}
+              <p class="text-success">✅ Delivered on {{ op.delivery_date|date:"M d, Y" }}</p>
             {% endif %}
           </div>
         </div>

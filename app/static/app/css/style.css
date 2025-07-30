@@ -1,3 +1,16 @@
+#cart-item-count {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  min-width: 1rem;
+  line-height: 1;
+  border-radius: 999px;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  transform: translate(-50%, -10%);
+}
+
+
 /* === Owl Carousel Styling === */
 .owl-carousel .item {
   font-size: 24px;
@@ -27,6 +40,26 @@
   font-weight: bold;
 }
 
+/* === Product Card Styling === */
+.card-item {
+  width: 180px;                /* Set fixed width for each product item */
+  margin-right: 10px;          /* Space between items */
+  overflow: hidden;
+}
+
+.product-title {
+  display: block;
+  font-weight: bold;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;                 /* Match the card's width */
+}
+
+
+
+
 /* === Logout Button === */
 .logout-btn {
   background: none;
@@ -45,8 +78,7 @@
 .logout-btn:focus {
   background-color: #dc3545;
   color: white;
-  outline: 2px solid #005fcc;
-  outline-offset: 2px;
+  text-decoration: none;
 }
 
 /* === Image Styling === */
@@ -399,4 +431,62 @@ body.dark-mode .order-summary {
   background-color: #1f1f1f !important;
   color: #dcdcdc !important;
   border-color: #444 !important;
+}
+
+.star-rating {
+  direction: rtl;
+  display: inline-flex;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating label {
+  color: lightgray;
+  transition: color 0.3s;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: gold;
+}
+
+.star-rating input:checked ~ label {
+  color: gold;
+}
+.tracking-steps{
+  flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  padding: 10px;
+}
+
+.step {
+  flex: 0 0 auto;
+  margin: 5px;
+  text-align: center;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+}
+.step .circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  line-height: 40px;
+  margin: auto;
+  font-weight: bold;
+}
+.step .label {
+  margin-top: 6px;
+  font-size: 0.50rem;
 }

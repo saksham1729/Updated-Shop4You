@@ -5,10 +5,7 @@
 {% block main-content %}
 <div class="container my-4">
   <h2 class="mb-4">Track Your Order</h2>
-  <div id="map" style="height: 500px; border: 1px solid #ccc;"></div>
-  <div class="mt-3 text-info">
-    <strong>Estimated delivery time: <U>{{ eta }}</U> hours</strong>
-  </div>
+  <div id="map" style="height: 500px; width: 500px; border: 1px solid #ccc;"></div>
 </div>
 
 <!-- Leaflet CSS & JS -->
@@ -22,6 +19,7 @@
   const userLat = {{ user_lat }};
   const userLng = {{ user_lng }};
   const productData = {{ products|safe }};
+  const username = "{{ request.user.username|escapejs }}";
 
   const map = L.map('map').setView([userLat, userLng], 6);
 
@@ -32,12 +30,12 @@
 
   // Mark user's location
   const userMarker = L.marker([userLat, userLng]).addTo(map)
-    .bindPopup("Your Address").openPopup();
+    .bindPopup(`${username}`).openPopup();
 
   // Loop through products and show route
   productData.forEach(item => {
     const productMarker = L.marker([item.lat, item.lng]).addTo(map)
-      .bindPopup(`<strong>${item.title}</strong><br>Status: ${item.status}<br>Estimated Delivery Time: ${item.eta} hours`);
+      .bindPopup(`<strong>${item.title}</strong><br>Status: ${item.status}`);
 
     // Draw route from product to user
     L.Routing.control({

@@ -52,14 +52,46 @@
 						 </a>
 						 
 					 </li>
+					 <li>
 					 <a class="nav-link active" aria-current="page" href="{% url 'office' %}" style ="display: inline-flex; align-items: center;">
 						<i class ="fas fa-briefcase" style="margin-right: 6px;"></i>
 						<span>OfficeProducts</span>
-					</a>
-					 <a class="nav-link active" aria-current="page" href="{% url 'kitchen' %}" style ="display: inline-flex; align-items: center;">
-						<i class ="fas fa-utensils" style="margin-right: 6px;"></i>
-						<span>Home&Kitchen</span>
-					</a>
+						</a>
+					</li>
+
+					 <li class="nav-item dropdown">
+						 <a class="nav-link dropdown-toggle text-white" href="#" id="hkDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style ="display: inline-flex; align-items: center;">
+							<i class ="fas fa-utensils" style="margin-right: 6px;"></i>
+							<span> Home&Kitchen</span>
+						 </a>
+						 <ul class="dropdown-menu" aria-labelledby="hkDropdown">
+							 <li><a class="dropdown-item" href="{% url 'fans' %}" style ="display: inline-flex; align-items: center;">
+								<i class = "fas fa-fan"  style="margin-right: 6px;"></i>
+								<span>Fans</span>
+							</a></li>
+							 <li><a class="dropdown-item" href="{% url 'iron' %}" style = "display: inline-flex; align-items: center;">
+								<i class ="fas fa-oil-can" style="margin-right: 6px;"></i>
+								<span>Iron</span>
+							</a></li>
+							 <li><a class="dropdown-item" href="{% url 'grinder' %}" style = "display: inline-flex; align-items: center;">
+								<i class = "fas fa-blender" style="margin-right: 6px;"></i>
+								<span>Grinder</span>
+							</a></li>
+								<li><a class="dropdown-item" href="{% url 'kitchen' %}" style="display: inline-flex; align-items: center;">
+								<i class="fas fa-house-user" style="margin-right: 6px;"></i>
+								<span>Kitchen</span>
+								</a></li>
+								<li><a class="dropdown-item" href="{% url 'roomheater' %}" style="display: inline-flex; align-items: center;">
+								<i class=" 	fas fa-temperature-high" style="margin-right: 6px;"></i>
+								<span>Room Heater</span>
+								</a></li>
+								<li><a class="dropdown-item" href="{% url 'waterheater' %}" style="display: inline-flex; align-items: center;">
+								<i class="fas fa-shower" style="margin-right: 6px;"></i>
+								<span>Water Heater</span>
+								</a></li>
+						 </ul>
+					 </li>
+
 					 <li class="nav-item dropdown">
 						 <a class="nav-link dropdown-toggle text-white" href="#" id="electronicsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style ="display: inline-flex; align-items: center;">
 							<i class ="fas fa-tv" style="margin-right: 6px;"></i>

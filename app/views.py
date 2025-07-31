@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse, redirect
 from .models import Customer, Product, Cart, OrderPlaced
-from .forms import CustomerRegistrationForm, CustomerProfileForm,  ProfileImageForm
 from django.views import View
 from django.contrib import messages
 from django.http import JsonResponse
@@ -48,6 +47,16 @@ from app.models import RecommendationLog
 from django.http import JsonResponse
 from recommend_engine.recommend import recommend_products
 from app.models import ProductRating, Product, OrderPlaced
+
+
+import random
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from twilio.rest import Client
+from .forms import CustomerDetailsForm, CustomerProfileForm, ProfileImageForm
+from .forms import PhoneForm, OTPVerificationForm
+
+
 
 import os
 
@@ -506,19 +515,146 @@ def kitchen(request, data=None):
 
 	return render(request, 'app/Home&Kitchen.html', {'kitchen': kitchen, 'totalitem': totalitem})
 
+def waterheater(request, data=None):
+	totalitem = 0
+	if request.user.is_authenticated:
+		totalitem = Cart.objects.filter(user=request.user).aggregate(Sum('quantity'))['quantity__sum'] or 0
+	
+	if data is None:
+		waterheater	 = Product.objects.filter(category='WH')
+	else:
+		waterheater = Product.objects.filter(category='WH')  # fallback
+
+	return render(request, 'app/WaterHeater.html', {'waterheater': waterheater, 'totalitem': totalitem})
+
+def grinder(request, data=None):
+	totalitem = 0
+	if request.user.is_authenticated:
+		totalitem = Cart.objects.filter(user=request.user).aggregate(Sum('quantity'))['quantity__sum'] or 0
+	
+	if data is None:
+		grinder	 = Product.objects.filter(category='GD')
+	else:
+		grinder = Product.objects.filter(category='GD')  # fallback
+
+	return render(request, 'app/Grinder&Blender.html', {'grinder': grinder, 'totalitem': totalitem})
+
+def iron(request, data=None):
+	totalitem = 0
+	if request.user.is_authenticated:
+		totalitem = Cart.objects.filter(user=request.user).aggregate(Sum('quantity'))['quantity__sum'] or 0
+	
+	if data is None:
+		iron	 = Product.objects.filter(category='I')
+	else:
+		iron = Product.objects.filter(category='I')  # fallback
+
+	return render(request, 'app/Iron.html', {'iron': iron, 'totalitem': totalitem})
+
+def fans(request, data=None):
+	totalitem = 0
+	if request.user.is_authenticated:
+		totalitem = Cart.objects.filter(user=request.user).aggregate(Sum('quantity'))['quantity__sum'] or 0
+	
+	if data is None:
+		fans = Product.objects.filter(category='FAN')
+	else:
+		fans = Product.objects.filter(category='FAN')  # fallback
+
+	return render(request, 'app/fans.html', {'fans': fans, 'totalitem': totalitem})
+
+def roomheater(request, data=None):
+	totalitem = 0
+	if request.user.is_authenticated:
+		totalitem = Cart.objects.filter(user=request.user).aggregate(Sum('quantity'))['quantity__sum'] or 0
+	
+	if data is None:
+		roomheater	 = Product.objects.filter(category='RH')
+	else:
+		roomheater = Product.objects.filter(category='RH')  # fallback
+
+	return render(request, 'app/RoomHeater.html', {'roomheater': roomheater, 'totalitem': totalitem})
+
 
 class CustomerRegistrationView(View):
-	def get(self, request):
-		form = CustomerRegistrationForm()
-		return render(request, 'app/customerregistration.html', {'form':form})
+    def get(self, request):
+        return render(request, 'app/customerregistration.html', {
+            'phone_form': PhoneForm(),
+            'otp_form': OTPVerificationForm(),
+            'details_form': CustomerDetailsForm(),
+        })
 
-	def post(self, request):
-		form = CustomerRegistrationForm(request.POST)
-		if form.is_valid():
-			form.save()
-			messages.success(request, 'Congratulations!! Registered Successfully.')
-			return redirect('login')
-		return render(request, 'app/customerregistration.html', {'form':form})
+    def post(self, request):
+        stage = request.POST.get('stage')
+
+        if stage == 'send_otp':
+            phone_form = PhoneForm(request.POST)
+            if phone_form.is_valid():
+                phone = phone_form.cleaned_data['phone']
+                otp = str(random.randint(100000, 999999))
+
+                # Send SMS using Twilio
+                account_sid = 'AC51e24b5efcbfab0d198a7a46e0c815db'
+                auth_token = 'f7965ec9fc79c5d77c046a3b25db4e18'
+                client = Client(account_sid, auth_token)
+                client.messages.create(
+                    body=f"Your OTP is {otp}",
+                    from_='+12176694297',
+                    to='+91' + phone
+                )
+
+                request.session['phone'] = phone
+                request.session['otp'] = otp
+
+                messages.info(request, f"OTP sent to {phone}.")
+                return render(request, 'app/customerregistration.html', {
+                    'phone_form': phone_form,
+                    'otp_form': OTPVerificationForm(),
+                    'details_form': None,
+                    'stage': 'otp'
+                })
+
+        elif stage == 'verify_otp':
+            otp_form = OTPVerificationForm(request.POST)
+            original_otp = request.session.get('otp')
+            if otp_form.is_valid():
+                if otp_form.cleaned_data['otp'] == original_otp:
+                    messages.success(request, "OTP verified. Please complete your registration.")
+                    return render(request, 'app/customerregistration.html', {
+                        'phone_form': None,
+                        'otp_form': None,
+                        'details_form': CustomerDetailsForm(),
+                        'stage': 'details'
+                    })
+                else:
+                    messages.error(request, "Incorrect OTP.")
+            return render(request, 'app/customerregistration.html', {
+                'phone_form': None,
+                'otp_form': otp_form,
+                'details_form': None,
+                'stage': 'otp'
+            })
+
+        elif stage == 'submit_details':
+            details_form = CustomerDetailsForm(request.POST)
+            if details_form.is_valid():
+                user = details_form.save()
+                phone = request.session.get('phone')
+
+                # Save phone to related model if needed
+                #Customer.objects.create(user=user, phone=phone)
+
+                # Clear session
+                request.session.flush()
+
+                messages.success(request, "Registered successfully.")
+                return redirect('login')
+
+            return render(request, 'app/customerregistration.html', {
+                'details_form': details_form,
+                'stage': 'details'
+            })
+
 
 @method_decorator(login_required, name='dispatch')
 class ProfileView(View):
@@ -660,16 +796,18 @@ geolocator = Nominatim(user_agent="shop4you", timeout=5)
 
 
 def get_coordinates(address, retries=3, delay=1):
-	for attempt in range(retries):
-		try:
-			location = geolocator.geocode(address)
-			if location:
-				return location.latitude, location.longitude
-			else:
-				return None, None
-		except GeocoderUnavailable:
-			time.sleep(delay)  # wait before retrying
-	return 25.3176, 82.9739 if location is None else (location.latitude, location.longitude)
+    for attempt in range(retries):
+        try:
+            location = geolocator.geocode(address)
+            if location:
+                return location.latitude, location.longitude
+            else:
+                return None, None  # Address not found
+        except GeocoderUnavailable:
+            time.sleep(delay)  # wait before retrying
+
+    # All retries exhausted or geocoder unavailable throughout
+    return 25.3176, 82.9739  # Default fallback coordinates
 
 
 

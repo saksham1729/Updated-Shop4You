@@ -1,6 +1,7 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% block title %}Customer Registration{% endblock title %}
+
 {% block main-content %}
 <div class="container">
   <div class="row my-3">
@@ -8,29 +9,31 @@
       <h3>Customer Registration</h3>
       <hr>
 
-      <form method="post" novalidate class="shadow p-5">
+      <form method="post" novalidate class="shadow p-4">
         {% csrf_token %}
-       
 
-        {% for fm in form %}
-          <div class="form-group mb-3">
-            {{ fm.label_tag }} {{ fm }} 
-            <small class="text-danger">{{ fm.errors|striptags }}</small>
-          </div>
-        {% endfor %}
+        {% if stage == None or stage == 'send_otp' %}
+          {{ phone_form.as_p }}
+          <input type="hidden" name="stage" value="send_otp">
+          <button type="submit" class="btn btn-primary">Send OTP</button>
 
-        {% if form.non_field_errors %}
-          {% for error in form.non_field_errors %}
-            <p class="alert alert-danger my-3">{{ error }}</p>
-          {% endfor %}
+        {% elif stage == 'otp' %}
+          {{ otp_form.as_p }}
+          <input type="hidden" name="stage" value="verify_otp">
+          <button type="submit" class="btn btn-warning">Verify OTP</button>
+
+        {% elif stage == 'details' %}
+          {{ details_form.as_p }}
+          <input type="hidden" name="stage" value="submit_details">
+          <button type="submit" class="btn btn-success">Create Account</button>
         {% endif %}
 
-        <input type="submit" value="Register" class="btn btn-primary">
         <br>
         <div class="text-center text-primary fw-bold mt-3">
           <small>Existing User? <a href="{% url 'login' %}" class="text-danger">Login Now</a></small>
         </div>
       </form>
+
     </div>
   </div>
 </div>

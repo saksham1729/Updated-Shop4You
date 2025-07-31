@@ -1,0 +1,22 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}waterheater{% endblock title %}
+{% block main-content %}
+<div class="container my-5">
+ <div class="row">
+    {% for product in waterheater %}
+     <div class="col-sm-3 text-center mb-4">
+      <div class="card h-100 p-2">
+       <a href="{% url 'product-detail' product.id %}" class="btn">
+        <img src="{{ product.img_link }}" alt="{{ product.title }}" class="fixed-product-img">
+        <div class="fw-bold mt-2">{{ product.title }}</div>
+        <div class="fw-bold">Rs. {{ product.discounted_price }}
+         <small class="fw-light text-decoration-line-through">{{ product.selling_price }}</small>
+        </div>
+       </a>
+      </div>
+     </div>
+    {% endfor %}
+   </div>
+  </div>
+{% endblock main-content %}

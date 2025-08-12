@@ -1,0 +1,43 @@
+<!-- templates/app/recommend_size.html -->
+<h2>Size Recommendation for {{ product.title }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div>
+    <label>{{ form.image.label }}</label><br>
+    {{ form.image }}
+  </div>
+  <div>
+    <label>{{ form.height_cm.label }}</label><br>
+    {{ form.height_cm }}
+  </div>
+  <button type="submit">Get My Size</button>
+</form>
+
+{% if recommended_size or pants_size %}
+  <section style="margin-top: 20px;">
+    <h3>Recommended Sizes:</h3>
+    <ul>
+      {% if recommended_size %}
+        <li><strong>Top Size:</strong> {{ recommended_size }}</li>
+      {% endif %}
+      {% if pants_size %}
+        <li><strong>Pants Size:</strong> {{ pants_size }}</li>
+      {% endif %}
+    </ul>
+  </section>
+
+  {% if annotated_image_url %}
+    <section style="margin-top: 20px;">
+      <h4>Pose Landmarks:</h4>
+      <img src="{{ annotated_image_url }}" alt="Pose landmarks" style="max-width: 100%; height: auto;">
+    </section>
+  {% endif %}
+
+  {% if original_image_url %}
+    <section style="margin-top: 20px;">
+      <h4>Original Image:</h4>
+      <img src="{{ original_image_url }}" alt="Original Image" style="max-width: 100%; height: auto;">
+    </section>
+  {% endif %}
+{% endif %}

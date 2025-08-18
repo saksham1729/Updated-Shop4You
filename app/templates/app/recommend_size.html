@@ -1,43 +1,98 @@
-<!-- templates/app/recommend_size.html -->
-<h2>Size Recommendation for {{ product.title }}</h2>
+{% extends 'app/base.html' %}
+{% load static %}
 
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  <div>
-    <label>{{ form.image.label }}</label><br>
-    {{ form.image }}
-  </div>
-  <div>
-    <label>{{ form.height_cm.label }}</label><br>
-    {{ form.height_cm }}
-  </div>
-  <button type="submit">Get My Size</button>
-</form>
+{% block main-content %}
+<div class="container py-5">
+  <h2 class="mb-4 text-center">Size Recommendation for <strong>{{ product.title }}</strong></h2>
 
-{% if recommended_size or pants_size %}
-  <section style="margin-top: 20px;">
-    <h3>Recommended Sizes:</h3>
-    <ul>
+  <div class="form-section bg-white p-4 rounded shadow-sm mb-4">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">{{ form.image.label }}</label>
+        {{ form.image }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ form.height_cm.label }}</label>
+        {{ form.height_cm }}
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="use_3d" id="use3d">
+        <label class="form-check-label" for="use3d">Use 3D estimation</label>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Get My Size</button>
+    </form>
+  </div>
+
+  {% if recommended_size or pants_size %}
+  <div class="result-section bg-white p-4 rounded shadow-sm mb-4">
+    <h4 class="mb-3">Recommended Sizes</h4>
+    <ul class="list-group">
       {% if recommended_size %}
-        <li><strong>Top Size:</strong> {{ recommended_size }}</li>
+        <li class="list-group-item"><strong>Top Size:</strong> {{ recommended_size }}</li>
       {% endif %}
       {% if pants_size %}
-        <li><strong>Pants Size:</strong> {{ pants_size }}</li>
+        <li class="list-group-item"><strong>Pants Size:</strong> {{ pants_size }}</li>
       {% endif %}
     </ul>
-  </section>
+  </div>
 
   {% if annotated_image_url %}
-    <section style="margin-top: 20px;">
-      <h4>Pose Landmarks:</h4>
-      <img src="{{ annotated_image_url }}" alt="Pose landmarks" style="max-width: 100%; height: auto;">
-    </section>
+  <div class="result-section bg-white p-4 rounded shadow-sm mb-4">
+    <h5>Pose Landmarks</h5>
+    <img src="{{ annotated_image_url }}" alt="Pose landmarks" class="img-fluid rounded">
+  </div>
   {% endif %}
 
   {% if original_image_url %}
-    <section style="margin-top: 20px;">
-      <h4>Original Image:</h4>
-      <img src="{{ original_image_url }}" alt="Original Image" style="max-width: 100%; height: auto;">
-    </section>
+  <div class="result-section bg-white p-4 rounded shadow-sm mb-4">
+    <h5>Original Image</h5>
+    <img src="{{ original_image_url }}" alt="Original Image" class="img-fluid rounded">
+  </div>
   {% endif %}
+
+  {% if mesh_url %}
+  <div class="result-section text-center mb-4">
+    <a href="{{ mesh_url }}" class="btn btn-outline-secondary">Download 3D Mesh</a>
+  </div>
+
+  <div class="viewer-card bg-white p-4 rounded shadow-sm">
+    <h5 class="mb-3">3D Mesh Viewer</h5>
+    <div id="viewer" style="width: 100%; height: 600px;"></div>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+
+{% if mesh_url %}
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/OBJLoader.js"></script>
+<script>
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 800/600, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(800, 600);
+  document.getElementById('viewer').appendChild(renderer.domElement);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(0, 1, 1).normalize();
+  scene.add(light);
+
+  const loader = new THREE.OBJLoader();
+  loader.load("{{ mesh_url }}", function (object) {
+    scene.add(object);
+    object.position.y = -50;
+    object.rotation.y = Math.PI;
+  });
+
+  camera.position.z = 200;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
 {% endif %}
+{% endblock %}
